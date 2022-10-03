@@ -64,8 +64,9 @@ TOKEN: /* Nombres de Comandos */
 		| 	<PUT: "Put">
 		| 	<PICK: "Pick">
 		|  < POP: "Pop" >
-		|  <GO: "GO" >
 		|  <HOP: "HOP" >
+		|<BALLOONS:  "BALLOONS" >
+		|	<CHIPS:     "CHIPS"  >
         |  < INICIO:  "PROG" >
         |  < FIN:  "GORP" >
         |  < VARIABLE:  "var" >
@@ -84,6 +85,7 @@ TOKEN: /* Nombres de Comandos */
         |  < IGUAL:  "=" >
         |  < #letra: ["a"-"z","A"-"Z"] >
         |  < CADENA: "\""(~["\""])*"\"" >
+		|  	<#DIGIT: ["0"-"9"] >
         |  < IDENTIFICADOR: (<letra>|"_")(<letra>|<DIGIT>|"_")*>
         |  < VALOR_ENTERO:  (<DIGIT>)+ >
         
@@ -91,23 +93,6 @@ TOKEN: /* Nombres de Comandos */
         	
 
 }
-
-TOKEN:
-{
-		<BALLOONS:  "BALLOONS" >
-		|	<CHIPS:     "CHIPS"  >	
-
-}
-
-
-
-TOKEN :
-{
-		<NUM: (<DIGIT>)+ >
-		|  	<#DIGIT: ["0"-"9"] >
-        
-}
-
 
 
 	//boolean command(uniandes.lym.robot.view.Console sistema) :
@@ -120,16 +105,8 @@ TOKEN :
 
 	
 	{
-		(<INICIO>		  (declararVariable()
-		   <RIGHT> "(" ")" {world.turnRight();salida = "Command: Turnright";}
-		| 	<MOV>  "(" x=num() ")" {world.moveForward(x,false);salida = "Command: Moveforward ";}  
-		| 	<HOP>  "(" x=num() ")" {world.moveForward(x,true);salida = "Command:Jumpforward ";}
-		| 	<GO>  "(" x=num() "," y=num()")" {world.setPostion(x,y);salida = "Command:GO ";}  
-		|  <PUT> "("  put() ")"					  			
-		|  <PICK> "(" get()  ")"	
-	    |  < POP > "(" x=num() ")" {world.popBalloons(x); salida = "Comando:  Pop";}
-		) ";" 
-		<FIN>
+		(<INICIO>		(sentencias())*
+		<FIN>	
 		{
 		    try {
 	    			 Thread.sleep(900);
@@ -164,47 +141,89 @@ TOKEN :
 
 	}
 	
+	
+	
+
+	void sentencias():{}
+	{
+		declararVariable()
+	|	declararFuncion()
+	|	LOOKAHEAD(2)Funciones()
+	|	While()
+	|	If()
+	|	blockOfInstructions()
+	}
+/*
+	void Go(): {int x,y;
+		salida=new String();}
+	{
+		<GO>  "(" x=num() "," y=num()")" {world.setPostion(x,y);salida = "Command:GO ";} 
+	}
+*/
+	
 	void declararVariable():{}
 	{
-		<VARIABLE><IDENTIFICADOR>
+		<VARIABLE><IDENTIFICADOR> (LOOKAHEAD(2)(<COMA><IDENTIFICADOR>)* <PUNTOYCOMA> | <PUNTOYCOMA>) 
 	}
 	
 	void tipoDato():{}
 	{
-		<NUM>|<CADENA>
+		<VALOR_ENTERO>|<CADENA>
 	}
 	void valor():{}
 	{
 		<CADENA>|<VALOR_ENTERO>|<IDENTIFICADOR>
 	
 	}
-	/*
-
-	void sentencias():{}
+	
+	
+	void declararFuncion():{}
 	{
-		declararVariable()
-		declararFuncion()
-		Funcion1()
-		While()
-		If()
-		BlockOfInstructions()
-		Go()
+		<FUNCION><IDENTIFICADOR><ABRIRPARENTESIS>declararParametros()<CERRARPARENTESIS>
+		<ABRIRCORCHETE>
+			(sentencias())*
+		<CERRARCORCHETE>
+	
+	
+	}
+	void declararParametros():{}
+	{
+		(<IDENTIFICADOR>|<VALOR_ENTERO>)(<COMA>(<IDENTIFICADOR>|<VALOR_ENTERO>))*
 	}
 	
-	void declararVariable():{}
+	void Funciones():{}
 	{
-		<VAR><IDENTIFICADOR>tipoDato()[<IGUAL>valor()]
+		<IDENTIFICADOR><ABRIRPARENTESIS>declararParametros()<CERRARPARENTESIS>
 	}
 	
-	void tipoDato():{}
-	{
-		<ENTERO>|<CADENA>|<FLOTANTE>
-	}
-	void valor():{}
-	{
-		<VALOR_CADENA>|<VALOR_ENTERO>|<VALOR_FLOTANTE>|<IDENTIFICADOR>
 	
-	}*/
+	void While():{}
+	{
+		<WHILE> condicion()<DO> <ABRIRCORCHETE>(sentencias())+ <CERRARCORCHETE><OD>
+	
+	
+	}
+	
+	void If():{}
+	{
+		<IF> condicion() <ABRIRCORCHETE>(sentencias())+ <CERRARCORCHETE><FI>
+	}
+	
+	void condicion():{}
+	{
+		<ABRIRPARENTESIS>Funciones()<CERRARPARENTESIS>
+	}
+	
+	
+	void blockOfInstructions():{}
+	{
+		<ABRIRCORCHETE>((LOOKAHEAD(2)Funciones() 
+		|<IDENTIFICADOR><IGUAL><VALOR_ENTERO>)<PUNTOYCOMA>)* <CERRARCORCHETE>
+		
+	}
+	
+	
+	
 	/**
 	 * Unsigned decimal number
 	 * @return the corresponding value of the string
@@ -216,7 +235,7 @@ TOKEN :
 		int total=1;
 	}
 	{
-		<NUM>
+		<VALOR_ENTERO>
 		{
 			try 
 			{
@@ -229,5 +248,15 @@ TOKEN :
 			return total;
 		}
 	}
-
-	
+/*
+	  (declararVariable()
+		   <RIGHT> "(" ")" {world.turnRight();salida = "Command: Turnright";}
+		| 	<MOV>  "(" x=num() ")" {world.moveForward(x,false);salida = "Command: Moveforward ";}  
+		| 	<HOP>  "(" x=num() ")" {world.moveForward(x,true);salida = "Command:Jumpforward ";}
+		| 	<GO>  "(" x=num() "," y=num()")" {world.setPostion(x,y);salida = "Command:GO ";}  
+		|  <PUT> "("  put() ")"					  			
+		|  <PICK> "(" get()  ")"	
+	    |  < POP > "(" x=num() ")" {world.popBalloons(x); salida = "Comando:  Pop";}
+		) ";" 
+		
+*/

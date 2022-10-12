@@ -24,10 +24,10 @@ end
    
     
 function create():IAutomaton begin
-	Q:= {⟨pos,read⟩| pos in {1,2,3}, read in ℘{'a', 'b'}}  ∪ {0}  // 0 is the error state
-	Σ:=  {'a', 'b'} ∪ {'$'}
+	Q:= {⟨pos,read⟩| pos in {1,2,3}, read in ℘{'a', 'b', 'c','d', 'e', 'f','g','=','$'}}  ∪ {0}  // 0 is the error state
+	Σ:=  {'a', 'b', 'c','d', 'e', 'f','g'} ∪ {'=','$'}
 	q₀ := ⟨1,Ø⟩
-	F:= {⟨P,R⟩| P in {2}, R in ℘{'a', 'b'}}   
+	F:= {⟨P,R⟩| P in {3}, R in ℘{'a', 'b', 'c','d', 'e', 'f','g'}}   
 	M:=GDeterministicAutomaton(Q,Σ,q₀,F,delta)
 	return M
  end
@@ -38,10 +38,15 @@ function delta(q, s) begin
  function delta(⟨p,q⟩,s) 
      
     begin 
-      if p=1 and s≠'$'  then return⟨1, q ∪ {s} ⟩ 	
-      elseif p=1  then return ⟨2,q⟩
-      elseif p=2 and s='$'  then return 0
-      elseif p=2 and s∉ q  then return ⟨p,q⟩
+    c1 := {}
+    c2 := {}
+      if p=1 and s≠'$'and s≠q and s≠'='  then return⟨1, q ∪ {s} ⟩ 	
+      elseif p=1 and s='$' then c1 := {q}return ⟨2,q⟩
+      elseif p=2 and (s='$')  then return 0
+      elseif p=2 and s≠'=' and s≠'$'  then return⟨2, q ∪ {s} ⟩ 
+      elseif p=2 and s ='=' then return ⟨3,q⟩
+      elseif p=3 and (s∉c1 or s='=' or s='$') then return 0
+      elseif p=3 and s∈c1  then return ⟨p,q⟩
       else return 0
       end
     end

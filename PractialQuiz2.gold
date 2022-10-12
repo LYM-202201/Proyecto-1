@@ -1,0 +1,70 @@
+// -----------------------
+// Nicolas Riveros
+// UNIVERSIDAD DE LOS ANDES
+//------------------------------
+//  {'a', 'b', 'c','d', 'e', 'f','g'}
+//  
+// A language L over {a, b, c, d, e, f, g, $, =} where M only contains strings of the form:
+//	S$T=X
+//	Such that X, S and T are in {a, b, c, d, e, f, g}*; S, X, and T do not contain repeated symbols;
+//	and X contains all characters that are in S and are not in T. 
+//    
+//   
+
+using gold.**
+
+procedure main(args:String[]) begin
+	GAutomataFrame.show(create())
+	Utilities.test(create())
+end
+function getName() begin
+	return "Practical Quiz 2"
+end
+        
+   
+    
+function create():IAutomaton begin
+	Q:= {⟨pos,read⟩| pos in {1,2,3}, read in ℘{'a', 'b'}}  ∪ {0}  // 0 is the error state
+	Σ:=  {'a', 'b'} ∪ {'$'}
+	q₀ := ⟨1,Ø⟩
+	F:= {⟨P,R⟩| P in {2}, R in ℘{'a', 'b'}}   
+	M:=GDeterministicAutomaton(Q,Σ,q₀,F,delta)
+	return M
+ end
+
+function delta(q, s) begin
+    return q
+ end
+ function delta(⟨p,q⟩,s) 
+     
+    begin 
+      if p=1 and s≠'$'  then return⟨1, q ∪ {s} ⟩ 	
+      elseif p=1  then return ⟨2,q⟩
+      elseif p=2 and s='$'  then return 0
+      elseif p=2 and s∉ q  then return ⟨p,q⟩
+      else return 0
+      end
+    end
+
+
+
+
+//  procedure to test the automata without the graphical interface 
+procedure testPerm(C:IAutomaton) begin
+ 	var sc:java.util.Scanner(System.$in)
+ 	var  string: String
+   	
+     
+   	print  "Testing"
+
+	while true do
+		print "----------------------------"
+		print "Enter a string:"
+		string:=sc.nextLine()
+		if string = "STOP" then  break end
+		result:=C.acceptsString(string)
+		print "The string was "+(result?"accepted":"REJECTED") 
+	end
+	print "End test"
+ 
+end

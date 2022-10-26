@@ -1,0 +1,148 @@
+// -----------------------
+// Silvia Takahashi
+// UNIVERSIDAD DE LOS ANDES
+// Codes and decodes
+// Coder: Reads a string  of the form W1W2‥Wn$
+// Where
+//  Wi  in {a,b}*
+//  Each Wi is coded like this:
+// if Wi = as1s2s3s4s5s6s7 then the transducer will outut a and the postions where b appears 
+// if Wi = bs1s2s3s4s5s6s7 then the transducer will outut b and the postions where a appears
+
+
+using gold.**
+  
+         
+  
+var A
+var B
+
+procedure main(args:String[]) begin
+	var sc:java.util.Scanner(System.$in)
+    
+    A = ('a'‥'z')
+    B = ('0'‥'9')
+	coder:=createCoder()
+   	deCoder:=createDecoder()
+    
+    //GAutomataFrame.show(coder)
+   //GAutomataFrame.show(deCoder)
+   
+  	
+	
+  	Utilities.testCodeDecode(coder,deCoder)
+		
+end
+
+
+
+
+
+function createCoder():ITransducer begin
+	
+	Q:={"inic","fin","err"}∪(('a'‥'b')×(1‥7))
+	Σ:=('a'‥'b')∪{'$'}
+	Σ´:=('a'‥'z')∪{'$'}∪('1'‥'7')
+	q₀:="inic"
+	F:={"fin"}
+	return 	GDeterministicTransducer(Q,Σ,Σ´,q₀,F,delta,g,h)
+end
+function delta(q,s) begin
+	if q ∈{"fin","err"} then return "err"
+	elseif s='$' then return "fin"
+	else return ⟨s,1⟩
+end
+end
+function delta(⟨c,p⟩,s) begin
+    if s='$' then return "err" 
+    elseif (p=7) then return "inic"
+    else return ⟨c,p+1⟩
+end
+end
+
+
+function g(q) begin
+	return λ
+end
+
+function h(q,σ) begin
+	if q ∈{"fin","err"} then
+		return ""
+	else return σ
+end
+end
+function h(⟨c,p⟩,s) begin
+    if s='$' then return "" 
+    elseif s=c then return ""
+    else return p
+end
+end
+
+function createDecoder():ITransducer begin
+	Q:={"inic","fin","err"}∪(('a'‥'b')×(1‥7)) 
+	Σ :=('a'‥'b')∪{ '$'}∪('0'‥'7')
+	Σ´:= ('a'‥'b')∪{ '$'}∪('0'‥'7')
+	q₀:="inic"
+	F:=	 {"fin"}
+
+	return 	GDeterministicTransducer(Q,Σ,Σ´,q₀,F,δ1,g,h1)
+end
+
+function δ1(q,s) begin
+	if q ∈{"fin","err"} then return "err"
+	elseif s='$' then return "fin"
+	else return ⟨"0",s⟩
+end
+end
+function δ1(⟨c,p⟩,s) begin
+    if s='$' then return "err" 
+    elseif s="0" then return "err"
+    elseif s<=c then return "err"
+    elseif s=!"1" and s=! "2" and s=!"3" and s=! "4" and s=!"5" and s=! "6" and s=!"7" and s=!'$' then return "error"
+  
+    elseif p='a' and s = 'b' then return ⟨s,p⟩
+    	
+    elseif p='b' and s = 'a' then return ⟨s,p⟩  
+  
+    elseif p='a' and (s =! 'a' or s =! 'b')then return ⟨s,p+(s-c-1)*"a"+"b"⟩
+    	
+    elseif p='b' and (s =! 'a' or s =! 'b') then return ⟨s,p+(s-c-1)*"b"+"a"⟩
+    	
+    elseif s = '$' and p = 'a' and c= "0" then return ⟨"8","aaaaaaaa"⟩
+    	
+    elseif s = '$' and p = 'b' and c= "0" then return ⟨"8","bbbbbbbb"⟩
+    	
+    elseif p.lenght()=8 then return "inic"
+end
+end
+
+
+
+	
+	
+//function δ1(state,input) begin
+//  return state
+//end
+
+function g1(q) begin
+	return λ
+end
+
+
+function h1(q,σ) begin
+	if q ∈{"fin","err"} then
+		return ""
+	else return σ
+end
+end
+
+function h1(⟨c,p⟩,s) begin
+    if s='$' then return "" 
+    elseif p.lenght() < 8 then return ""
+    else return p
+end
+end
+
+ 
+
+

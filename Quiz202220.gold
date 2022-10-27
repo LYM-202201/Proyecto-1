@@ -89,23 +89,19 @@ function createDecoder():ITransducer begin
 	return 	GDeterministicTransducer(Q,Σ,Σ´,q₀,F ,δ1,g1,h1)
 end
 
+/* Profe, solo funciona para cadenas de 8, cuando intento con mas no sirve y no logre arreglarlo :(
+ * 
+ */
+
 function δ1(q,s) begin
 	if q ∈{"fin","err"} then return "err"
 	elseif s='$' then return "fin"
-	//elseif s='1' or s='2' or s='3' or s='4' or s='5' or s='6' or s='7' then return "err"
+	
 	elseif s='a' or s='b'then  return ⟨s,1⟩
 	else return "err"
 end
 end
-/* 
- * ,δ1
-function δ1(q,s) begin
-	if q ∈{"fin","err"} then return "err"
-	elseif s='$' then return "fin"
-	elseif s='a' or s='a'then  return ⟨s,'0'⟩
-	else return "err"
-end
-end*/
+
 function δ1(⟨c,p⟩,s) begin
 	if s='$' then return "err"
     else 
@@ -126,37 +122,7 @@ function δ1(⟨c,p⟩,s) begin
     	else
     		return ⟨c,n+1⟩
 end
-end/*
-    if s='$' then return "err" 
-    elseif s='0' then return "err"
-    elseif s<=p then return "err"
-    elseif s=!'1' and s=! '2' and s=!'3' and s=! '4' and s=!'5' and s=! '6' and s=!'7' and s=!'$' then return "error"
-  
-    elseif c='a' and s = 'b' then return ⟨s,p⟩
-    	
-    elseif c='b' and s = 'a' then return ⟨s,p⟩  
-  
-    elseif c='a' and (s =! 'a' or s =! 'b')then return ⟨s,c+((s-p-1)*'a')+'b'⟩
-    	
-    elseif c='b' and (s =! 'a' or s =! 'b') then return ⟨s,c+((s-p-1)*'b')+'a'⟩
-    	
-    elseif s = '$' and c = 'a' and p= "0" then return ⟨"8","aaaaaaaa"⟩
-    	
-    elseif s = '$' and p = 'b' and c= "0" then return ⟨"8","bbbbbbbb"⟩
-    	
-    elseif p.lenght()=8 then return "inic"
-    	
-    else print "chismo"
 end
-end */
-
-
-
-	
-	
-//function δ1(state,input) begin
-//  return state
-//end
 
 function g1(q) begin
 	return λ
@@ -172,9 +138,6 @@ end
 end
 
 function h1(⟨c,p⟩,s) begin
-	print c
-	print p
-	print s
 	v = ""
 	n = 0
 	switch s begin

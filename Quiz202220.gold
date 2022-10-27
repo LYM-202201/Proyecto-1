@@ -47,6 +47,7 @@ function createCoder():ITransducer begin
 	F:={"fin"}
 	return 	GDeterministicTransducer(Q,Σ,Σ´,q₀,F,delta,g,h)
 end
+
 function delta(q,s) begin
 	if q ∈{"fin","err"} then return "err"
 	elseif s='$' then return "fin"
@@ -80,41 +81,74 @@ end
 
 function createDecoder():ITransducer begin
 	Q:={"inic","fin","err"}∪(('a'‥'b')×(1‥7)) 
-	Σ :=('a'‥'b')∪{ '$'}∪('0'‥'7')
-	Σ´:= ('a'‥'b')∪{ '$'}∪('0'‥'7')
+	Σ :=('a'‥'b')∪{'$'}∪('1'‥'7')
+	Σ´:= ('a'‥'z')∪{'$'}∪('1'‥'7')
 	q₀:="inic"
 	F:=	 {"fin"}
 
-	return 	GDeterministicTransducer(Q,Σ,Σ´,q₀,F,δ1,g,h1)
+	return 	GDeterministicTransducer(Q,Σ,Σ´,q₀,F ,δ1,g1,h1)
 end
 
 function δ1(q,s) begin
 	if q ∈{"fin","err"} then return "err"
 	elseif s='$' then return "fin"
-	else return ⟨"0",s⟩
+	//elseif s='1' or s='2' or s='3' or s='4' or s='5' or s='6' or s='7' then return "err"
+	elseif s='a' or s='b'then  return ⟨s,1⟩
+	else return "err"
 end
 end
+/* 
+ * ,δ1
+function δ1(q,s) begin
+	if q ∈{"fin","err"} then return "err"
+	elseif s='$' then return "fin"
+	elseif s='a' or s='a'then  return ⟨s,'0'⟩
+	else return "err"
+end
+end*/
 function δ1(⟨c,p⟩,s) begin
+	if s='$' then return "err"
+    else 
+    	n = 1
+		switch s begin
+		case '1': n =1
+		case '2': n =2
+		case '3': n =3
+		case '4': n =4
+		case '5': n =5
+		case '6': n =6
+		case '7': n =7
+		default: n = 1
+			
+		end
+		if n = 7 then
+    		return ⟨c,n⟩
+    	else
+    		return ⟨c,n+1⟩
+end
+end/*
     if s='$' then return "err" 
-    elseif s="0" then return "err"
-    elseif s<=c then return "err"
-    elseif s=!"1" and s=! "2" and s=!"3" and s=! "4" and s=!"5" and s=! "6" and s=!"7" and s=!'$' then return "error"
+    elseif s='0' then return "err"
+    elseif s<=p then return "err"
+    elseif s=!'1' and s=! '2' and s=!'3' and s=! '4' and s=!'5' and s=! '6' and s=!'7' and s=!'$' then return "error"
   
-    elseif p='a' and s = 'b' then return ⟨s,p⟩
+    elseif c='a' and s = 'b' then return ⟨s,p⟩
     	
-    elseif p='b' and s = 'a' then return ⟨s,p⟩  
+    elseif c='b' and s = 'a' then return ⟨s,p⟩  
   
-    elseif p='a' and (s =! 'a' or s =! 'b')then return ⟨s,p+(s-c-1)*"a"+"b"⟩
+    elseif c='a' and (s =! 'a' or s =! 'b')then return ⟨s,c+((s-p-1)*'a')+'b'⟩
     	
-    elseif p='b' and (s =! 'a' or s =! 'b') then return ⟨s,p+(s-c-1)*"b"+"a"⟩
+    elseif c='b' and (s =! 'a' or s =! 'b') then return ⟨s,c+((s-p-1)*'b')+'a'⟩
     	
-    elseif s = '$' and p = 'a' and c= "0" then return ⟨"8","aaaaaaaa"⟩
+    elseif s = '$' and c = 'a' and p= "0" then return ⟨"8","aaaaaaaa"⟩
     	
     elseif s = '$' and p = 'b' and c= "0" then return ⟨"8","bbbbbbbb"⟩
     	
     elseif p.lenght()=8 then return "inic"
+    	
+    else print "chismo"
 end
-end
+end */
 
 
 
@@ -129,6 +163,7 @@ function g1(q) begin
 end
 
 
+
 function h1(q,σ) begin
 	if q ∈{"fin","err"} then
 		return ""
@@ -137,10 +172,51 @@ end
 end
 
 function h1(⟨c,p⟩,s) begin
-    if s='$' then return "" 
-    elseif p.lenght() < 8 then return ""
-    else return p
-end
+	print c
+	print p
+	print s
+	v = ""
+	n = 0
+	switch s begin
+		case '1': n =1
+		case '2': n =2
+		case '3': n =3
+		case '4': n =4
+		case '5': n =5
+		case '6': n =6
+		case '7': n =7
+		default: n = 1
+			
+	end
+	if p >= 7 then return "" end
+	if s='$' then 
+		while (p < 8) do
+	    	v = v + c
+	    	p = p + 1
+	    end
+	    return v
+	elseif (c = 'a' and s = 'b') or (c = 'b' and s = 'a') then
+		while (p < 7) do
+	    	v = v + c
+	    	p = p + 1
+	    end
+	    return v
+	elseif p < n then
+	    while (p < n) do
+	    	v = v + c
+	    	p = p + 1
+	    end
+	    if c = 'a' then v = v + "b"
+	    	else v = v + "a"
+	    end
+	    return v
+    elseif p = n then
+    	if c = 'a' then return "b"
+	    	else return "a"
+	    end
+	    return v
+    else	return ""
+    end
 end
 
  
